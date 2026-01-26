@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1",
+    "title": "Breaking News: Flutter Rising",
+    "content": "Flutter is gaining popularity among developers worldwide. Its cross-platform capabilities and rich UI toolkit make it a favorite for mobile, web, and desktop apps.",
+    "summary": "Flutter adoption is rapidly increasing.",
+    "url": "https://example.com/flutter-news"
+  },
+  {
+    "id": "2",
+    "title": "AI in News Apps",
+    "content": "AI is transforming how news is delivered, summarized, and personalized. From voice assistants to smart recommendations, it's reshaping the user experience.",
+    "summary": "AI is reshaping modern news apps.",
+    "url": "https://example.com/ai-news"
+  }
+]

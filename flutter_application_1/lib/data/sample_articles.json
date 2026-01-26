@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1",
+    "title": "Breaking News: Flutter Rising",
+    "content": "Flutter is gaining popularity among developers worldwide...",
+    "summary": "Flutter adoption is rapidly increasing.",
+    "url": "https://example.com/flutter-news"
+  },
+  {
+    "id": "2",
+    "title": "AI in News Apps",
+    "content": "AI is transforming how news is delivered, summarized, and personalized...",
+    "summary": "AI is reshaping modern news apps.",
+    "url": "https://example.com/ai-news"
+  }
+]

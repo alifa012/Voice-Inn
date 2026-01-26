@@ -1,0 +1,35 @@
+name: voice_inn
+description: A voice-first news app with summarization, TTS, and personalization.
+publish_to: 'none' # this prevents accidental publishing to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.10.3 <4.0.0"   # ✅ clearer range for Dart SDK
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & icons
+  cupertino_icons: ^1.0.8
+
+  # Text-to-Speech
+  flutter_tts: ^3.8.5
+
+  # Networking
+  http: ^1.2.0   # ✅ updated to latest stable
+
+  # State management
+  provider: ^6.1.2   # ✅ corrected version (no +1 suffix)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1   # ✅ aligned with Flutter 3.x
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/sample_articles.json
