@@ -18,10 +18,25 @@ dependencies:
   flutter_tts: ^3.8.5
 
   # Networking
-  http: ^1.2.0   # ✅ updated to latest stable
+  http: ^1.2.0
+
+  # YouTube Video Player
+  youtube_player_flutter: ^8.1.2
 
   # State management
-  provider: ^6.1.2   # ✅ corrected version (no +1 suffix)
+  provider: ^6.1.2
+
+  # RSS Feed parsing
+  webfeed: ^0.7.0
+
+  # String similarity for deduplication
+  string_similarity: ^2.0.0
+  
+  # XML parsing for enhanced African RSS
+  xml: ^5.4.1
+  
+  # Internationalization for date parsing
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:
