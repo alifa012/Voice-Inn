@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:voice_inn/screens/simple_home_screen.dart';
+import 'package:voice_inn/screens/home_screen.dart';
 import 'package:voice_inn/screens/profile_screen.dart';
 import 'package:voice_inn/screens/podcasts_screen.dart';
 
@@ -60,7 +60,7 @@ class _RootShellState extends State<RootShell> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      const SimpleHomeScreen(), // debug version
+      const HomeScreen(), // Full Voice-INN application
       const Scaffold(body: Center(child: Text('Community Screen'))), // placeholder
       const PodcastsScreen(),  // video news screen
       const ProfileScreen(),   // placeholder

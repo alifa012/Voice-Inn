@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/article.dart';
 
 class ArticleDetailScreen extends StatefulWidget {
@@ -131,9 +132,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Voice-INN',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
         centerTitle: false,
       ),
@@ -411,6 +412,28 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                         fontSize: 15,
                       ),
                     ),
+                    
+                    // READ FULL ARTICLE BUTTON (only if content is incomplete)
+                    if (_isContentIncomplete() && widget.article.id.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _openFullArticle,
+                            icon: const Icon(Icons.open_in_new),
+                            label: const Text('Read Full Article'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     
                     // SOURCE INFORMATION ONLY
                     const SizedBox(height: 16),
