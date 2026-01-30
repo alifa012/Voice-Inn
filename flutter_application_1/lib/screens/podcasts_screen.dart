@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/video_article.dart';
 import '../services/youtube_service.dart';
-import '../screens/video_player_screen.dart';
 
 class PodcastsScreen extends StatefulWidget {
   const PodcastsScreen({super.key});
@@ -242,13 +242,17 @@ class _PodcastsScreenState extends State<PodcastsScreen> {
 
   Widget _buildVideoCard(VideoArticle video, ThemeData theme) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VideoPlayerScreen(video: video),
-          ),
-        );
+      onTap: () async {
+        try {
+          final uri = Uri.parse('https://youtube.com/watch?v=${video.videoId}');
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cannot open video: $e')),
+          );
+        }
       },
       child: Card(
         clipBehavior: Clip.antiAlias,

@@ -1,3 +1,5 @@
+import '../services/content_extraction_service.dart';
+
 class Article {
   final String id;
   final String title;
@@ -11,6 +13,8 @@ class Article {
   final String? source;
   final String? author;
   final List<String> tags;
+  final List<ExtractedVideo> videos;
+  final String? extractedContent; // Full content from web scraping
   final int? readingTimeMinutes;
 
   Article({
@@ -26,6 +30,8 @@ class Article {
     this.source,
     this.author,
     this.tags = const [],
+    this.videos = const [],
+    this.extractedContent,
     this.readingTimeMinutes,
   });
 
@@ -200,4 +206,39 @@ class Article {
           source: 'Voice-INN',
         ),
       ];
+  
+  /// Create enhanced article with extracted web content
+  Article copyWithExtractedContent(ExtractedContent extractedContent) {
+    return Article(
+      id: id,
+      title: extractedContent.title.isNotEmpty ? extractedContent.title : title,
+      summary: summary,
+      description: description,
+      content: content,
+      category: category,
+      publishedAt: extractedContent.publishDate ?? publishedAt,
+      imageUrl: extractedContent.imageUrl ?? imageUrl,
+      urlToImage: extractedContent.imageUrl ?? urlToImage,
+      source: source,
+      author: extractedContent.author ?? author,
+      tags: extractedContent.tags.isNotEmpty ? extractedContent.tags : tags,
+      videos: extractedContent.videos,
+      extractedContent: extractedContent.content,
+      readingTimeMinutes: extractedContent.readingTimeMinutes,
+    );
+  }
+
+  /// Get the best available content (extracted if available, fallback to original)
+  String get bestContent {
+    return extractedContent?.isNotEmpty == true ? extractedContent! : 
+           content.isNotEmpty ? content : 
+           description.isNotEmpty ? description : summary;
+  }
+
+  /// Check if article has video content
+  bool get hasVideos => videos.isNotEmpty;
+
+  /// Get YouTube videos specifically
+  List<ExtractedVideo> get youTubeVideos => 
+      videos.where((v) => v.platform == VideoPlatform.youtube).toList();
 }

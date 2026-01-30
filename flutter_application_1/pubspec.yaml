@@ -20,8 +20,8 @@ dependencies:
   # Networking
   http: ^1.2.0
 
-  # YouTube Video Player
-  youtube_player_flutter: ^8.1.2
+  # URL launcher for external links
+  url_launcher: ^6.3.0
 
   # State management
   provider: ^6.1.2

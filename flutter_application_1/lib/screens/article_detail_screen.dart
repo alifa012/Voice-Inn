@@ -83,6 +83,32 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     return (wordCount / 225).ceil().clamp(1, 99);
   }
 
+  bool _isContentIncomplete() {
+    final content = _getFullArticleText();
+    // Check if content is truncated or incomplete
+    return content.endsWith('...') || 
+           content.endsWith('[Truncated]') || 
+           content.endsWith('Read more') || 
+           content.length < 300 || // Very short content
+           content.contains('characters') && content.contains('remaining');
+  }
+
+  Future<void> _openFullArticle() async {
+    final url = widget.article.id; // URL is stored in the id field
+    if (url.isNotEmpty && Uri.tryParse(url) != null) {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open article URL')),
+          );
+        }
+      }
+    }
+  }
+
   Widget _buildMetadataItem({
     required IconData icon,
     required String label,
@@ -321,69 +347,18 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                   ),
                 ),
 
-              // DETAILED DESCRIPTION
-              if (article.description.isNotEmpty && 
-                  article.description != article.summary && 
-                  article.description != article.title)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1A1F1A) : Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isDark ? Colors.green.shade800 : Colors.green.shade200,
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 18,
-                            color: isDark ? Colors.green.shade300 : Colors.green.shade700,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Detailed Information',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.green.shade300 : Colors.green.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        article.description,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          height: 1.5,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // FULL CONTENT CARD
+              // ARTICLE URL DISPLAY
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(top: 16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF15151A) : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    if (!isDark)
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 18,
-                        offset: const Offset(0, 10),
-                      ),
-                  ],
+                  color: isDark ? const Color(0xFF15151A) : Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.blue.shade300,
+                    width: 1,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,54 +366,90 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                     Row(
                       children: [
                         Icon(
-                          Icons.description_outlined,
+                          Icons.link,
                           size: 18,
-                          color: theme.iconTheme.color?.withOpacity(0.7),
+                          color: Colors.blue.shade600,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Complete Article',
+                          'Article Link',
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
+                            color: Colors.blue.shade600,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _getFullArticleText(),
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        height: 1.6,
-                        fontSize: 15,
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      article.id,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.blue.shade700,
+                        fontFamily: 'monospace',
                       ),
                     ),
-                    
-                    // READ FULL ARTICLE BUTTON (only if content is incomplete)
-                    if (_isContentIncomplete() && widget.article.id.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _openFullArticle,
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('Read Full Article'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                  ],
+                ),
+              ),
+
+              // READ FULL ARTICLE BUTTON
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(top: 16),
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final url = article.id;
+                      if (url.isNotEmpty) {
+                        final uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } else {
+                          throw Exception('Cannot open URL');
+                        }
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Copy this link: ${article.id}'),
+                            duration: const Duration(seconds: 4),
+                            action: SnackBarAction(
+                              label: 'OK',
+                              onPressed: () {},
                             ),
                           ),
-                        ),
-                      ),
-                    
-                    // SOURCE INFORMATION ONLY
-                    const SizedBox(height: 16),
-                    Divider(color: theme.dividerColor.withOpacity(0.3)),
-                    const SizedBox(height: 12),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Read Full Article'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+
+              // SOURCE INFORMATION SECTION
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(top: 16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF15151A) : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                    width: 0.5,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     if (article.source != null && article.source!.isNotEmpty)
                       Row(
                         children: [

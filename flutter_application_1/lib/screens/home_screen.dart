@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/article.dart';
 import '../models/filter_selection.dart';
 import '../models/news_location.dart';
@@ -19,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final MultiSourceNewsService _multiSourceService = MultiSourceNewsService();
   List<Article> _articles = [];
   List<Article> _allArticles = []; // Store all articles before filtering
-  List<Article> _filteredArticles = []; // Store filtered articles
+  final List<Article> _filteredArticles = []; // Store filtered articles
   bool _isLoading = true;
   String? _error;
   DateTime? _lastUpdate;
@@ -232,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
         source.contains('ntv') || source.contains('capital')) {
       return WorldNews.countriesByContinent[Continent.africa]?.firstWhere(
         (country) => country.code == 'ke',
-        orElse: () => Country(code: 'ke', name: 'Kenya', continent: Continent.africa, mainCities: ['Nairobi'], flagEmoji: '🇰🇪'),
+        orElse: () => const Country(code: 'ke', name: 'Kenya', continent: Continent.africa, mainCities: ['Nairobi'], flagEmoji: '🇰🇪'),
       );
     }
     
@@ -243,14 +244,14 @@ class _HomeScreenState extends State<HomeScreen> {
     if (source.contains('bbc') || source.contains('uk')) {
       return WorldNews.countriesByContinent[Continent.europe]?.firstWhere(
         (country) => country.code == 'gb',
-        orElse: () => Country(code: 'gb', name: 'United Kingdom', continent: Continent.europe, mainCities: ['London'], flagEmoji: '🇬🇧'),
+        orElse: () => const Country(code: 'gb', name: 'United Kingdom', continent: Continent.europe, mainCities: ['London'], flagEmoji: '🇬🇧'),
       );
     }
     
     if (source.contains('cnn') || source.contains('usa') || source.contains('us')) {
       return WorldNews.countriesByContinent[Continent.northAmerica]?.firstWhere(
         (country) => country.code == 'us',
-        orElse: () => Country(code: 'us', name: 'United States', continent: Continent.northAmerica, mainCities: ['New York'], flagEmoji: '🇺🇸'),
+        orElse: () => const Country(code: 'us', name: 'United States', continent: Continent.northAmerica, mainCities: ['New York'], flagEmoji: '🇺🇸'),
       );
     }
     
@@ -492,7 +493,22 @@ class _HomeScreenState extends State<HomeScreen> {
           final article = _articles[index];
           return _ArticleCard(
             article: article,
-            onTap: () {
+            onTap: () async {
+              // Try to open article link directly
+              try {
+                final url = article.id;
+                if (url.isNotEmpty) {
+                  final uri = Uri.parse(url);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    return;
+                  }
+                }
+              } catch (e) {
+                print('Error opening article link: $e');
+              }
+              
+              // Fallback: open detail screen
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -526,11 +542,27 @@ class _ArticleCard extends StatelessWidget {
       elevation: isDark ? 2 : 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: theme.primaryColor.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Column(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.cardColor,
+                theme.cardColor.withOpacity(0.95),
+              ],
+            ),
+          ),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
@@ -547,7 +579,7 @@ class _ArticleCard extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       height: 200,
-                      color: theme.colorScheme.surfaceVariant,
+                      color: theme.colorScheme.surfaceContainerHighest,
                       child: Icon(
                         Icons.broken_image,
                         size: 64,
@@ -559,7 +591,7 @@ class _ArticleCard extends StatelessWidget {
                     if (loadingProgress == null) return child;
                     return Container(
                       height: 200,
-                      color: theme.colorScheme.surfaceVariant,
+                      color: theme.colorScheme.surfaceContainerHighest,
                       child: Center(
                         child: CircularProgressIndicator(
                           value: loadingProgress.expectedTotalBytes != null
@@ -697,7 +729,7 @@ class _ArticleCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // Summary/Description
+                  // Summary/Description with click hint
                   if (article.summary.isNotEmpty)
                     Text(
                       article.summary,
@@ -708,6 +740,43 @@ class _ArticleCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                  const SizedBox(height: 12),
+                  
+                  // Click to read indicator
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: theme.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: theme.primaryColor.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.touch_app,
+                          size: 16,
+                          color: theme.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Tap to read full article',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.primaryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.open_in_new,
+                          size: 14,
+                          color: theme.primaryColor,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
